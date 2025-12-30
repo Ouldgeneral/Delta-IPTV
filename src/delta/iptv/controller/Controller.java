@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.regex.*;
 import javafx.application.Platform;
 import javafx.collections.*;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.*;
@@ -16,7 +17,7 @@ import tools.DeltaDB;
  * @author Ould_Hamdi
  */
 public class Controller {
-    String error="""
+    String html="""
                  <html>
                  <head>
                  </head>
@@ -24,11 +25,12 @@ public class Controller {
                      <h1 style='color:red'>%s</h1>
                  </body>
                  </html>""";
-    String deadServer=error.formatted("Server connection Failed\n");
-    String noInternet=error.formatted("No Internet Connection");
+    String deadServer=html.formatted("Server connection Failed\n");
+    String noInternet=html.formatted("No Internet Connection");
     Alert aboutDelta=new Alert(Alert.AlertType.INFORMATION);
     WebEngine engine;
     HashMap<String, String> programs,visitedPrograms;
+    FilteredList<String> searchFilter;
     DeltaDB serverDB,programDB;
     @FXML
     WebView player;
@@ -39,7 +41,7 @@ public class Controller {
     @FXML
     Button about,connect;
     @FXML
-    TextField server, uname,pass, port;
+    TextField server, uname,pass, port,search;
     @FXML
     Label title;
     @FXML
@@ -56,7 +58,7 @@ public class Controller {
         aboutDelta.setContentText("Delta IPTV Player is an m3u files player designed in javafx by Ould_Hamdi");
         about.setOnAction((e) -> aboutDelta.showAndWait());
         engine=player.getEngine();
-        engine.loadContent("<h1 style='color:red;'>Open a file or connect to a server</h1>");
+        engine.loadContent(html.formatted("Open a file or connect to a server"));
         programs=new HashMap<>();
         visitedPrograms=new HashMap<>();
         player.prefWidthProperty().bind(pane.widthProperty().subtract(300));
@@ -79,16 +81,20 @@ public class Controller {
         myPrograms.add("Delete all");
         serverList.setItems(servers);
         serverList.getSelectionModel().selectedItemProperty().addListener(e->{
-            if(serverList.getSelectionModel().getSelectedItem()!=null && serverList.getSelectionModel().getSelectedItem().equals("Delete all")){
-                serverDB.deleteDelta();
-                servers.clear();
-                servers.add("Delete all");
-                return;
+            try {
+                if(serverList.getSelectionModel().getSelectedItem()!=null && serverList.getSelectionModel().getSelectedItem().equals("Delete all")){
+                    serverDB.deleteDelta();
+                    servers.clear();
+                    servers.add("Delete all");
+                    return;
+                }
+                connectToServer(serverList.getSelectionModel().getSelectedItem());
+            } catch (IOException ex) {
             }
-            showProgram(serverList.getSelectionModel().getSelectedItem());
         });
         items=FXCollections.observableArrayList();
-        list.setItems(items);
+        searchFilter=new FilteredList<>(items,s->true);
+        list.setItems(searchFilter);
         list.getSelectionModel().selectedItemProperty().addListener(e->{
             showProgram(list.getSelectionModel().getSelectedItem());
         });
@@ -170,7 +176,7 @@ public class Controller {
             return;
         }
         if(!fileContent.contains("EXTINF")){
-            engine.loadContent(error.formatted("Invalid playlist found on server"));
+            engine.loadContent(html.formatted("Invalid playlist found on server"));
             return;
         }
         programs.clear();
@@ -253,5 +259,11 @@ public class Controller {
                 !port.getText().isEmpty() 
                 )connect.setDisable(false);
         else connect.setDisable(true);
+    }
+    public void searchProgram(){
+        searchFilter.setPredicate(program->{
+            if(search.getText().isEmpty())return true;
+            return program.toLowerCase().contains(search.getText().toLowerCase());
+        });
     }
 }
