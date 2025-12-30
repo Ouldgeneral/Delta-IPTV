@@ -74,7 +74,7 @@ public class Controller {
                 myPrograms.add("Delete all");
                 return;
             }
-            showProgram(programList.getSelectionModel().getSelectedItem());
+            showProgram(programList.getSelectionModel().getSelectedItem(),"myPrograms");
         });
         servers=serverDB.loadDelta();
         servers.add("Delete all");
@@ -96,7 +96,7 @@ public class Controller {
         searchFilter=new FilteredList<>(items,s->true);
         list.setItems(searchFilter);
         list.getSelectionModel().selectedItemProperty().addListener(e->{
-            showProgram(list.getSelectionModel().getSelectedItem());
+            showProgram(list.getSelectionModel().getSelectedItem(),"programList");
         });
         Platform.runLater(()->{
             loadVisitedPrograms();
@@ -116,11 +116,13 @@ public class Controller {
             myPrograms.add(p.split(",")[0]);
         }
     }
-    public void showProgram(String program){
-        title.setText(program);
+    public void showProgram(String program,String programList){
+            String link=(programList.equals("programList"))
+                    ?programs.get(list.getSelectionModel().getSelectedItem())
+                    :visitedPrograms.get(program);
+            title.setText(program);
             engine.loadContent("<h1 style='color:red;'>Loading...</h1>");
             String result;
-            String link=programs.get(list.getSelectionModel().getSelectedItem());
             boolean hasInternet=Internet.hasInternet();
             boolean isValidLink=false;
             try {
@@ -129,14 +131,14 @@ public class Controller {
                 
             }
             try {
-                if(hasInternet && isValidLink){
-                    result=loadChannel(visitedPrograms.containsKey(program)?visitedPrograms.get(program):programs.get(program));
+                if(hasInternet && isValidLink && link!=null){
+                    result=loadChannel(link);
                     if(!myPrograms.contains(program)){
                         myPrograms.add(program);
                         visitedPrograms.put(program, programs.get(program));
                         programDB.saveDelta(program+","+programs.get(program));
                     }
-                }else if(hasInternet && !isValidLink){
+                }else if(hasInternet && !isValidLink || link==null){
                     result=deadServer;
                 }else{
                     result=noInternet;
