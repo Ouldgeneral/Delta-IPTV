@@ -223,8 +223,8 @@ public class Controller {
                     html, body {
                         margin: 0;
                         padding: 0;
-                        width: 100%;
-                        height: 100%;
+                        width: 100vw;
+                        height: 100vh;
                         background: black;
                         overflow: hidden;
                     }
@@ -240,8 +240,8 @@ public class Controller {
                         position: absolute;
                         top: 0;
                         left: 0;
-                        width: 100%;
-                        height: 100%;
+                        width: 100vw;
+                        height: 100vh;
                         border: none;
                     }
                     </style>

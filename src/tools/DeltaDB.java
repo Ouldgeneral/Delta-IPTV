@@ -1,4 +1,7 @@
 package tools;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -8,17 +11,19 @@ import javafx.collections.ObservableList;
 public class DeltaDB {
     Connection con;
     String dataType;
+    String appPath=System.getenv("APPDATA")+"\\Delta_IPTV\\data\\";
     public DeltaDB(String dataType){
-        this.dataType=dataType;
         try {
-            con=DriverManager.getConnection("jdbc:sqlite:%ss.db".formatted(dataType.toLowerCase()));
+            Files.createDirectories(Paths.get(appPath));
+            this.dataType=dataType;
+            con=DriverManager.getConnection("jdbc:sqlite:"+appPath+"%ss.db".formatted(dataType.toLowerCase()));
             if(con!=null){
                 String sql="CREATE TABLE IF NOT EXISTS %sS(%s TEXT NOT NULL);".formatted(dataType,dataType);
                 Statement stmt=con.createStatement();
                 stmt.execute(sql);
             }
-        } catch (SQLException ex) {
-
+        } catch (IOException | SQLException ex) {
+            
         }
     }
     public void saveDelta(String server){

@@ -50,6 +50,8 @@ public class Internet {
             }
         }catch(FileNotFoundException e){
             return "Error";
+        }catch(IOException e){
+            return "Error";
         }
         return content.toString();
     }
