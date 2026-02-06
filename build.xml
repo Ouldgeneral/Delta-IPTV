@@ -70,4 +70,18 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="-post-jar">
+        <mkdir dir="${dist.dir}/bin"/>
+        <copy todir="${dist.dir}/bin">
+            <fileset dir="${basedir}/bin">
+                <include name="*.dll"/>
+            </fileset>
+        </copy>
+        <copy todir="${dist.dir}">
+            <fileset dir="${basedir}/script">
+                <include name="*"/>
+            </fileset>
+        </copy>
+        <move file="${dist.dir}/${ant.project.name}.jar" tofile="${dist.dir}/${ant.project.name}.iptv"/>
+    </target>
 </project>
